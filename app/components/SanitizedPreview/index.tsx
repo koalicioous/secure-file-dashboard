@@ -46,10 +46,15 @@ const SanitizedPreview = ({
             disabled={!metadata?.uniqueFileName}
             variant="outline"
             onClick={() => downloadFile(metadata?.uniqueFileName as string)}
+            aria-label="Download File"
           >
             <DownloadCloud className="size-4" />
           </Button>
-          <Button variant="outline" onClick={onClose}>
+          <Button
+            variant="outline"
+            onClick={onClose}
+            aria-label="Close Preview"
+          >
             <CircleX className="size-4" />
           </Button>
         </div>

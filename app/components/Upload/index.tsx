@@ -83,7 +83,7 @@ export function FileDashboard({
             <TableBody>
               {files.map((file, index) => (
                 <TableRow key={index}>
-                  <TableCell className="font-medium">
+                  <TableCell className="font-medium max-w-[380px] line-clamp-1 overflow-ellipsis">
                     {escapeHTML(sanitizeFilename(file.name))}
                   </TableCell>
                   <TableCell>{formatFileSize(file.size)}</TableCell>
@@ -109,11 +109,13 @@ export function FileDashboard({
                         size="icon"
                         disabled={file.status !== "completed"}
                         onClick={() => onPreview(file)}
+                        aria-label="See Content"
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="destructive"
+                        aria-label="Remove File"
                         size="icon"
                         onClick={() => {
                           if (file.status === "uploading") {

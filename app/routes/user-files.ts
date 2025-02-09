@@ -3,15 +3,7 @@ import { promises as fsp } from "fs";
 import path from "path";
 import type { Route } from "./+types/user-files";
 import type { LoaderFileData } from "~/types";
-
-const getMimeType = (fileName: string): string => {
-  const extension = fileName.split(".").pop()?.toLowerCase();
-  const mimeTypes: Record<string, string> = {
-    pdf: "application/pdf",
-    png: "image/png",
-  };
-  return mimeTypes[extension!] || "application/octet-stream";
-};
+import { getMimeType } from "~/lib/utils";
 
 export async function loader({ params }: Route.LoaderArgs) {
   const token = params.token;
@@ -45,7 +37,7 @@ export async function loader({ params }: Route.LoaderArgs) {
         originalName,
         path: url,
         size: stat.size,
-        modifiedTime: stat.mtime,
+        modifiedTime: stat.mtime as unknown as string,
         type: fileType,
       } as LoaderFileData;
     })

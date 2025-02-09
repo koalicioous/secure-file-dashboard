@@ -36,3 +36,12 @@ export function getUserTokenFromCookie(request: Request): string | null {
   const match = cookieHeader.match(/currentUser=([^;]+)/);
   return match ? decodeURIComponent(match[1]) : null;
 }
+
+export function getMimeType(fileName: string): string {
+  const extension = fileName.split(".").pop()?.toLowerCase();
+  const mimeTypes: Record<string, string> = {
+    pdf: "application/pdf",
+    png: "image/png",
+  };
+  return mimeTypes[extension!] || "application/octet-stream";
+}

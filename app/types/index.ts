@@ -1,3 +1,4 @@
+import { z } from "zod";
 export interface FileItem {
   id: string;
   name: string;
@@ -8,12 +9,14 @@ export interface FileItem {
   url?: string;
 }
 
-export interface LoaderFileData {
-  fileId: string;
-  uniqueFileName: string;
-  originalName: string;
-  path: string;
-  size: number;
-  modifiedTime: Date;
-  type: string;
-}
+export const LoaderFileDataSchema = z.object({
+  fileId: z.string(),
+  uniqueFileName: z.string(),
+  originalName: z.string(),
+  path: z.string(),
+  size: z.number(),
+  modifiedTime: z.string(),
+  type: z.string(),
+});
+
+export type LoaderFileData = z.infer<typeof LoaderFileDataSchema>;

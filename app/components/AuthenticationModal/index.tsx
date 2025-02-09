@@ -82,6 +82,7 @@ export function AuthModal({ onAuthenticate, open, setOpen }: AuthModalProps) {
                 size="icon"
                 className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                 onClick={() => setShowPassword(!showPassword)}
+                aria-label="Show Password"
               >
                 {showPassword ? (
                   <EyeOff className="h-4 w-4" />
@@ -91,7 +92,7 @@ export function AuthModal({ onAuthenticate, open, setOpen }: AuthModalProps) {
               </Button>
             </div>
           </div>
-          <Button type="submit" className="ml-auto">
+          <Button type="submit" className="ml-auto" aria-label="Login">
             Login
           </Button>
         </form>

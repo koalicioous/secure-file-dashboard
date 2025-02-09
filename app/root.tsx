@@ -33,6 +33,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
           httpEquiv="Content-Security-Policy"
           content={`default-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;`}
         />
+        <title>Secure File Dashboard</title>
+        <meta
+          name="description"
+          content="This is a simple secure file dashboard"
+        />
         <Meta />
         <Links />
       </head>

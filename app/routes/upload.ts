@@ -2,6 +2,8 @@ import fs from "fs";
 import { promises as fsp } from "fs";
 import path from "path";
 import type { Route } from "./+types/home";
+import { getMimeType } from "~/lib/utils";
+import type { LoaderFileData } from "~/types";
 
 export async function action({ request }: Route.ActionArgs) {
   if (request.method === "DELETE") {
@@ -111,9 +113,27 @@ export async function action({ request }: Route.ActionArgs) {
 
         await fsp.rm(tempDir, { recursive: true, force: true });
 
-        const relativePath = path.join("/uploads", userToken, uniqueFileName);
-        return new Response(JSON.stringify({ filePath: relativePath }), {
-          status: 200,
+        const filePathForStat = path.join(userDir, uniqueFileName);
+        const stat = await fsp.stat(filePathForStat);
+        const url = path.join(uniqueFileName);
+
+        const underscoreIndex = fileName.indexOf("_");
+        const originalName =
+          underscoreIndex !== -1
+            ? fileName.substring(underscoreIndex + 1)
+            : fileName;
+        const fileType = getMimeType(fileName);
+        const finalResponse = {
+          fileId,
+          uniqueFileName,
+          originalName,
+          path: url,
+          size: stat.size,
+          modifiedTime: stat.mtime as unknown as string,
+          type: fileType,
+        } as LoaderFileData;
+        return new Response(JSON.stringify(finalResponse), {
+          status: 201,
           headers: { "Content-Type": "application/json" },
         });
       }

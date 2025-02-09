@@ -2,6 +2,7 @@ import { CHUNK_SIZE } from "~/constants";
 import { sanitizeFilename } from "~/lib/utils";
 import { useSimpleAuth } from "./useSimpleAuth";
 import { useRef } from "react";
+import { LoaderFileDataSchema, type LoaderFileData } from "~/types";
 
 function useChunkedUpload() {
   const { currentUser = "" } = useSimpleAuth();
@@ -11,14 +12,14 @@ function useChunkedUpload() {
   const uploadFile = async (
     file: File,
     fileId: string,
-    onProgress: (progress: number) => void
+    onProgress: (progress: number, file?: LoaderFileData) => void
   ): Promise<string> => {
     const abortController = new AbortController();
     abortControllers.current.set(fileId, abortController);
 
     const chunkSize = CHUNK_SIZE;
     const totalChunks = Math.ceil(file.size / chunkSize);
-    let finalFilePath = "";
+    let finalFileResponse = "";
     try {
       for (let i = 0; i < totalChunks; i++) {
         const start = i * chunkSize;
@@ -43,11 +44,13 @@ function useChunkedUpload() {
           throw new Error(`Failed to upload chunk ${i}`);
         }
 
-        onProgress(((i + 1) / totalChunks) * 100);
-
-        if (i === totalChunks - 1) {
-          const data = await response.json();
-          finalFilePath = data.filePath;
+        if (response.status === 201) {
+          const json = await response.json();
+          const parsedFileData = LoaderFileDataSchema.parse(json);
+          finalFileResponse = parsedFileData.path;
+          onProgress(100, parsedFileData);
+        } else {
+          onProgress(((i + 1) / totalChunks) * 100);
         }
       }
     } catch (error) {
@@ -59,7 +62,7 @@ function useChunkedUpload() {
       abortControllers.current.delete(fileId);
     }
 
-    return finalFilePath;
+    return finalFileResponse;
   };
 
   const cancelUpload = (fileId: string) => {

@@ -7,7 +7,7 @@ import { AuthModal } from "~/components/AuthenticationModal";
 import { Button } from "~/components/ui/button";
 import type { Route } from "./+types/user-files";
 import { useRevalidator } from "react-router";
-import type { FileItem } from "~/types";
+import type { FileItem, LoaderFileData } from "~/types";
 import { Spinner } from "~/components/Spinner";
 import { useDeleteFile } from "~/hooks/files/useDeleteFile";
 import SanitizedPreview from "~/components/SanitizedPreview";
@@ -53,6 +53,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   const [files, setFiles] = useState<FileItem[]>(
     mapLoaderDataToFileItem(loaderFiles)
   );
+
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
 
   const { isAuthenticated, login, logout } = useSimpleAuth();
@@ -96,11 +97,32 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         };
         setFiles((prev) => [...prev, newFile]);
 
-        uploadFile(file, fileId, (progress: number) => {
-          setFiles((prevFiles) =>
-            prevFiles.map((f) => (f.id === fileId ? { ...f, progress } : f))
-          );
-        })
+        uploadFile(
+          file,
+          fileId,
+          (progress: number, fileData?: LoaderFileData) => {
+            setFiles((prevFiles) =>
+              prevFiles.map((f) => {
+                if (f.id === fileId) {
+                  if (fileData) {
+                    return {
+                      ...f,
+                      progress,
+                      status: "completed",
+                      name: fileData.originalName,
+                      type: fileData.type,
+                      url: fileData.path,
+                      size: fileData.size,
+                    };
+                  } else {
+                    return { ...f, progress };
+                  }
+                }
+                return f;
+              })
+            );
+          }
+        )
           .then((finalFilePath) => {
             setFiles((prevFiles) =>
               prevFiles.map((f) =>
@@ -195,6 +217,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
           variant="outline"
           className="mx-auto w-full max-w-[200px] mt-10  px-3 py-2 hover:bg-transparent"
           onClick={() => logout()}
+          aria-label="Logout"
         >
           Logout
         </Button>
