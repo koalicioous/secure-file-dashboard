@@ -6,4 +6,5 @@ export default [
   route("/api/user/:token/files", "routes/user-files.ts"),
   route("/api/file/:id", "routes/file.ts"),
   route("/file/:token/:path", "routes/serve-file.ts"),
+  route("/download/:path", "routes/download-file.ts"),
 ] satisfies RouteConfig;

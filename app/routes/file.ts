@@ -4,6 +4,13 @@ import path from "path";
 import type { Route } from "./+types/file";
 import { getUserTokenFromCookie } from "~/lib/utils";
 
+async function computeChecksum(filePath: string): Promise<string> {
+  const fileBuffer = await fsp.readFile(filePath);
+  const digest = await crypto.subtle.digest("SHA-256", fileBuffer);
+  const hashArray = Array.from(new Uint8Array(digest));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 async function findUserFile(
   userDir: string,
   fileId: string
@@ -37,12 +44,13 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   }
   const filePath = path.join(userDir, uniqueFileName);
   const stat = await fsp.stat(filePath);
-  // Assume the original name is the part after the first underscore.
   const underscoreIndex = uniqueFileName.indexOf("_");
   const originalName =
     underscoreIndex !== -1
       ? uniqueFileName.slice(underscoreIndex + 1)
       : uniqueFileName;
+  const checksum = await computeChecksum(filePath);
+
   const metadata = {
     fileId,
     uniqueFileName,
@@ -51,6 +59,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     size: stat.size,
     createdTime: stat.birthtime,
     modifiedTime: stat.mtime,
+    checksum,
   };
   return new Response(JSON.stringify(metadata), {
     headers: { "Content-Type": "application/json" },
@@ -91,13 +100,6 @@ export async function action({ request, params }: Route.ActionArgs) {
     } catch (error) {
       return new Response("Error deleting file", { status: 500 });
     }
-  } else if (request.method === "POST") {
-    const url = path
-      .join("/uploads", token, uniqueFileName)
-      .replace(/\\/g, "/");
-    return new Response(JSON.stringify({ url }), {
-      headers: { "Content-Type": "application/json" },
-    });
   }
 
   return new Response("Method Not Allowed", { status: 405 });

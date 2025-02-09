@@ -1,17 +1,21 @@
 import { useEffect, useState } from "react";
+import { z } from "zod";
 
-export interface FileMetadata {
-  fileId: string;
-  uniqueFileName: string;
-  originalName: string;
-  url: string;
-  size: number;
-  createdTime: string;
-  modifiedTime: string;
-}
+export const FileMetadataSchema = z.object({
+  fileId: z.string(),
+  uniqueFileName: z.string(),
+  originalName: z.string(),
+  url: z.string(),
+  size: z.number(),
+  createdTime: z.string(),
+  modifiedTime: z.string(),
+  checksum: z.string(),
+});
+
+export type FileMetadata = z.infer<typeof FileMetadataSchema>;
 
 export function useFileMetadata({ fileId }: { fileId: string }) {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<FileMetadata | null>(null);
   const getFileMetadata = async (fileId: string): Promise<FileMetadata> => {
     const response = await fetch(`/api/file/${fileId}`, {
       method: "GET",
@@ -23,8 +27,14 @@ export function useFileMetadata({ fileId }: { fileId: string }) {
       throw new Error(errorText || "Failed to fetch file metadata");
     }
     const resData = await response.json();
-    setData(resData);
-    return resData;
+    try {
+      const parsedData = FileMetadataSchema.parse(resData);
+      setData(parsedData);
+      return parsedData;
+    } catch (validationError) {
+      console.error("Validation error:", validationError);
+      throw new Error("Invalid file metadata format");
+    }
   };
 
   useEffect(() => {

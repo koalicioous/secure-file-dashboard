@@ -143,6 +143,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 
   useEffect(() => {
     setFiles(mapLoaderDataToFileItem(loaderFiles));
+    setSelectedFile(null);
   }, [loaderFiles]);
 
   return (
@@ -159,7 +160,12 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         onPreview={(target: FileItem) => setSelectedFile(target)}
         onDeleteFile={handleDeleteFile}
         isLoading={isLoadingData}
-        previewComponent={<SanitizedPreview content={selectedFile} />}
+        previewComponent={
+          <SanitizedPreview
+            content={selectedFile}
+            onClose={() => setSelectedFile(null)}
+          />
+        }
       />
       <AuthModal
         open={authModalOpen}

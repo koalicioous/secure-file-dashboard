@@ -6,25 +6,62 @@ import { Viewer, SpecialZoomLevel } from "@react-pdf-viewer/core";
 
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import { useFileMetadata } from "~/hooks/files/useFileMetadata";
+import { Button } from "../ui/button";
+import { CircleX, DownloadCloud } from "lucide-react";
+import { useDownloadFile } from "~/hooks/files/useDownloadFile";
 
 const buildUrl = (token: string, path: string) => {
   if (!token || !path) return "";
   return `/file/${token}/${path}`;
 };
 
-const SanitizedPreview = ({ content }: { content: FileItem | null }) => {
+const SanitizedPreview = ({
+  content,
+  onClose,
+}: {
+  content: FileItem | null;
+  onClose: () => void;
+}) => {
   const { currentUser = "" } = useSimpleAuth();
   const contentUrl = buildUrl(currentUser as string, content?.url as string);
 
   const metadata = useFileMetadata({ fileId: content?.id as string });
-  console.log({ metadata });
+
+  const sanitizedFileName = DOMPurify.sanitize(content?.name as string);
+
+  const checksum = metadata?.checksum;
+
+  const { downloadFile } = useDownloadFile();
+
+  if (!content) return null;
 
   return (
     <div className="my-4">
-      <h1 className="font-semibold">File Preview</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="font-semibold mb-2">
+          File Preview: {sanitizedFileName ?? "N/A"}
+        </h1>
+        <div className="flex items-center gap-2">
+          <Button
+            disabled={!metadata?.uniqueFileName}
+            variant="outline"
+            onClick={() => downloadFile(metadata?.uniqueFileName as string)}
+          >
+            <DownloadCloud className="size-4" />
+          </Button>
+          <Button variant="outline" onClick={onClose}>
+            <CircleX className="size-4" />
+          </Button>
+        </div>
+      </div>
+      {checksum && (
+        <div className="my-2 p-2 rounded text-xs bg-neutral-100">
+          Download Integrity SHA: {checksum}
+        </div>
+      )}
       <div className="max-w-[500px] w-full mx-auto">
         <div className=" mx-auto w-full h-[400px] overflow-auto">
-          {content?.type === "application/pdf" && (
+          {content && content?.type === "application/pdf" && (
             <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
               <Viewer
                 fileUrl={contentUrl}
