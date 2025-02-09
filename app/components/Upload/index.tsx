@@ -1,7 +1,14 @@
 "use client";
 
 import { useDropzone } from "react-dropzone";
-import { Upload, Trash2, CheckCircle, XCircle, Eye } from "lucide-react";
+import {
+  Upload,
+  Trash2,
+  CheckCircle,
+  XCircle,
+  Eye,
+  CircleX,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -24,6 +31,7 @@ interface FileDashboardProps {
   isLoading: boolean;
   onDeleteFile: (id: string) => void;
   onPreview: (file: FileItem) => void;
+  onCancelUpload: (id: string) => void;
   previewComponent?: React.ReactNode;
 }
 
@@ -32,6 +40,7 @@ export function FileDashboard({
   onDrop,
   onRemove,
   onDeleteFile,
+  onCancelUpload,
   isLoading = false,
   previewComponent,
   onPreview,
@@ -107,14 +116,20 @@ export function FileDashboard({
                         variant="destructive"
                         size="icon"
                         onClick={() => {
-                          if (file.status === "completed") {
+                          if (file.status === "uploading") {
+                            onCancelUpload(file.id);
+                          } else if (file.status === "completed") {
                             onDeleteFile(file.id);
                           } else {
                             onRemove(index);
                           }
                         }}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        {file.status === "uploading" ? (
+                          <CircleX className="h-4 w-4" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
                       </Button>
                     </div>
                   </TableCell>

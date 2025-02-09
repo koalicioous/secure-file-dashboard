@@ -11,11 +11,15 @@ import type { FileItem } from "~/types";
 import { Spinner } from "~/components/Spinner";
 import { useDeleteFile } from "~/hooks/files/useDeleteFile";
 import SanitizedPreview from "~/components/SanitizedPreview";
+import { useCancelUpload } from "~/hooks/useCancelUpload";
 
 const ALLOWED_TYPES = ["application/pdf", "image/png"];
 const MAX_SIZE = 100_000_000;
 
-export async function clientLoader({ params }: Route.ClientLoaderArgs) {
+export async function clientLoader({
+  params,
+  request,
+}: Route.ClientLoaderArgs) {
   let token: string | null = null;
   if (typeof window !== "undefined") {
     token = JSON.parse(sessionStorage.getItem("currentUser") as string)?.token;
@@ -69,7 +73,8 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     return true;
   };
 
-  const { uploadFile } = useChunkedUpload();
+  const { uploadFile, cancelUpload } = useChunkedUpload();
+  const { cancelUpload: cleanupTempFile } = useCancelUpload();
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
@@ -134,6 +139,16 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     }
   };
 
+  const handleCancelUpload = async (fileId: string) => {
+    try {
+      cancelUpload(fileId);
+      await cleanupTempFile(fileId);
+      removeFile(fileId);
+    } catch (error) {
+      console.error("Error cancelling upload:", error);
+    }
+  };
+
   useEffect(() => {
     if (!isAuthenticated) {
       setAuthModalOpen(true);
@@ -159,6 +174,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         }}
         onPreview={(target: FileItem) => setSelectedFile(target)}
         onDeleteFile={handleDeleteFile}
+        onCancelUpload={handleCancelUpload}
         isLoading={isLoadingData}
         previewComponent={
           <SanitizedPreview
