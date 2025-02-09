@@ -4,6 +4,14 @@ import path from "path";
 import type { Route } from "./+types/home";
 import { getMimeType } from "~/lib/utils";
 import type { LoaderFileData } from "~/types";
+import NodeClam from "clamscan";
+
+const clamScan = new NodeClam().init({
+  clamscan: {
+    path: "/usr/local/clamav/bin/clamscan",
+    active: true,
+  },
+});
 
 async function revalidateFileType(filePath: string): Promise<boolean> {
   const fileBuffer = await fsp.readFile(filePath);
@@ -131,6 +139,23 @@ export async function action({ request }: Route.ActionArgs) {
         if (!isValidType) {
           await fsp.unlink(finalFilePath);
           return new Response("Invalid file type", { status: 400 });
+        }
+
+        // Check file virus using clamav
+        const scanResult = await (await clamScan).scanFile(finalFilePath);
+        if (scanResult.isInfected) {
+          await fsp.unlink(finalFilePath);
+          return new Response(
+            JSON.stringify({
+              message: "Virus detected in file",
+              viruses: scanResult.viruses,
+              error: "VIRUS_DETECTED",
+            }),
+            {
+              status: 400,
+              headers: { "Content-Type": "application/json" },
+            }
+          );
         }
 
         const filePathForStat = path.join(userDir, uniqueFileName);

@@ -18,6 +18,7 @@ import SanitizedPreview from "~/components/SanitizedPreview";
 import { useCancelUpload } from "~/hooks/useCancelUpload";
 import { z } from "zod";
 import { ContentSecurityPolicyProvider } from "~/components/ContentSecurityPolicyProvider";
+import { useToast } from "~/hooks/use-toast";
 
 const ALLOWED_TYPES = ["application/pdf", "image/png"];
 const MAX_SIZE = 100_000_000;
@@ -64,6 +65,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   const [files, setFiles] = useState<FileItem[]>(
     mapLoaderDataToFileItem(loaderFiles)
   );
+  const { toast } = useToast();
 
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
 
@@ -116,6 +118,10 @@ export default function Home({ loaderData }: Route.ComponentProps) {
               prevFiles.map((f) => {
                 if (f.id === fileId) {
                   if (fileData) {
+                    toast({
+                      title: `${f.name} is uploaded`,
+                      description: "File uploaded successfully",
+                    });
                     return {
                       ...f,
                       progress,
@@ -142,7 +148,6 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                   : f
               )
             );
-            console.log("File uploaded successfully at:", finalFilePath);
           })
           .catch((error) => {
             setFiles((prevFiles) =>
@@ -150,7 +155,12 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                 f.id === fileId ? { ...f, status: "error" } : f
               )
             );
-            console.error("Error uploading file:", error);
+            toast({
+              variant: "destructive",
+              title: "Failed to upload file",
+              description: error.message,
+            });
+            console.error("Error uploading file:", error.message);
           });
       }
     },

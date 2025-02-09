@@ -41,7 +41,18 @@ function useChunkedUpload() {
         });
 
         if (!response.ok) {
-          throw new Error(`Failed to upload chunk ${i}`);
+          let errorMessage = `Failed to upload chunk ${i}`;
+
+          try {
+            const errorData = await response.json();
+            if (errorData?.message) {
+              errorMessage = errorData.message;
+            }
+          } catch (err) {
+            console.error("Failed to parse error response", err);
+          }
+
+          throw new Error(errorMessage);
         }
 
         if (response.status === 201) {
