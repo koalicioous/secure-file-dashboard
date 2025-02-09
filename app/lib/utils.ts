@@ -23,9 +23,16 @@ export function mapLoaderDataToFileItem(
     id: file.fileId,
     name: file.originalName,
     size: file.size,
-    type: file.uniqueFileName.split(".").pop() || "unknown",
+    type: file.type,
     progress: 100,
     status: "completed",
-    url: file.url,
+    url: file.path,
   }));
+}
+
+export function getUserTokenFromCookie(request: Request): string | null {
+  const cookieHeader = request.headers.get("cookie");
+  if (!cookieHeader) return null;
+  const match = cookieHeader.match(/currentUser=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : null;
 }

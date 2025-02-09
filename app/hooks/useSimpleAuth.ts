@@ -33,9 +33,6 @@ function setStoredAuthData(data: AuthData | null) {
   }
 }
 
-/**
- * Validates if the stored auth data has not expired.
- */
 function isAuthDataValid(data: AuthData): boolean {
   return Date.now() < data.expiry;
 }
@@ -46,7 +43,6 @@ export function useSimpleAuth() {
     if (stored && isAuthDataValid(stored)) {
       return stored;
     }
-    // Remove stale/expired data from storage.
     setStoredAuthData(null);
     return null;
   });
@@ -57,7 +53,7 @@ export function useSimpleAuth() {
         setAuthData(null);
         setStoredAuthData(null);
       }
-    }, 60 * 1000); // check every minute
+    }, 60 * 1000);
 
     return () => clearInterval(interval);
   }, [authData]);
@@ -68,9 +64,6 @@ export function useSimpleAuth() {
       .join("");
   };
 
-  /**
-   * Logs in a user by generating a token from username and password.
-   */
   const login = useCallback(async (username: string, password: string) => {
     const data = new TextEncoder().encode(`${username}:${password}`);
     const hashBuffer = await crypto.subtle.digest("SHA-256", data);
@@ -80,14 +73,14 @@ export function useSimpleAuth() {
 
     setStoredAuthData(newAuthData);
     setAuthData(newAuthData);
+    document.cookie = `currentUser=${token}; expires=${expiry}; path=/; Secure; SameSite=Strict`;
   }, []);
 
-  /**
-   * Logs out the current user by clearing authentication data.
-   */
   const logout = useCallback(() => {
     setAuthData(null);
     setStoredAuthData(null);
+    document.cookie =
+      "currentUser=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Strict";
   }, []);
 
   const isAuthenticated = Boolean(authData && isAuthDataValid(authData));

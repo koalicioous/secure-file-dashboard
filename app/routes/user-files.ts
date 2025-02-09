@@ -4,6 +4,15 @@ import path from "path";
 import type { Route } from "./+types/user-files";
 import type { LoaderFileData } from "~/types";
 
+const getMimeType = (fileName: string): string => {
+  const extension = fileName.split(".").pop()?.toLowerCase();
+  const mimeTypes: Record<string, string> = {
+    pdf: "application/pdf",
+    png: "image/png",
+  };
+  return mimeTypes[extension!] || "application/octet-stream";
+};
+
 export async function loader({ params }: Route.LoaderArgs) {
   const token = params.token;
   const userDir = path.join(process.cwd(), "uploads", token);
@@ -20,7 +29,7 @@ export async function loader({ params }: Route.LoaderArgs) {
     fileNames.map(async (fileName) => {
       const filePath = path.join(userDir, fileName);
       const stat = await fsp.stat(filePath);
-      const url = path.join("/uploads", token, fileName).replace(/\\/g, "/");
+      const url = path.join(fileName);
 
       const underscoreIndex = fileName.indexOf("_");
       const originalName =
@@ -28,14 +37,16 @@ export async function loader({ params }: Route.LoaderArgs) {
           ? fileName.substring(underscoreIndex + 1)
           : fileName;
       const fileId = fileName.substring(0, underscoreIndex);
+      const fileType = getMimeType(fileName);
 
       return {
         fileId,
         uniqueFileName: fileName,
         originalName,
-        url,
+        path: url,
         size: stat.size,
         modifiedTime: stat.mtime,
+        type: fileType,
       } as LoaderFileData;
     })
   );

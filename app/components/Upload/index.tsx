@@ -1,7 +1,7 @@
 "use client";
 
 import { useDropzone } from "react-dropzone";
-import { Upload, Trash2, CheckCircle, XCircle } from "lucide-react";
+import { Upload, Trash2, CheckCircle, XCircle, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -15,27 +15,26 @@ import {
 } from "@/components/ui/table";
 import { escapeHTML, sanitizeFilename } from "~/lib/utils";
 import { Spinner } from "../Spinner";
-
-interface FileItem {
-  name: string;
-  size: number;
-  type: string;
-  progress: number;
-  status: "uploading" | "completed" | "error";
-}
+import type { FileItem } from "~/types";
 
 interface FileDashboardProps {
   files: FileItem[];
   onDrop: (files: File[]) => void;
   onRemove: (index: number) => void;
   isLoading: boolean;
+  onDeleteFile: (id: string) => void;
+  onPreview: (file: FileItem) => void;
+  previewComponent?: React.ReactNode;
 }
 
 export function FileDashboard({
   files,
   onDrop,
   onRemove,
+  onDeleteFile,
   isLoading = false,
+  previewComponent,
+  onPreview,
 }: FileDashboardProps) {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
@@ -57,6 +56,8 @@ export function FileDashboard({
             Drag and drop files here, or click to select
           </p>
         </div>
+
+        {previewComponent}
 
         {files.length > 0 && (
           <Table className="mt-8">
@@ -93,13 +94,29 @@ export function FileDashboard({
                     )}
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      onClick={() => onRemove(index)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        disabled={file.status !== "completed"}
+                        onClick={() => onPreview(file)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        onClick={() => {
+                          if (file.status === "completed") {
+                            onDeleteFile(file.id);
+                          } else {
+                            onRemove(index);
+                          }
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

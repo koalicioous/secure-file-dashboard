@@ -9,6 +9,8 @@ import type { Route } from "./+types/user-files";
 import { useRevalidator } from "react-router";
 import type { FileItem } from "~/types";
 import { Spinner } from "~/components/Spinner";
+import { useDeleteFile } from "~/hooks/files/useDeleteFile";
+import SanitizedPreview from "~/components/SanitizedPreview";
 
 const ALLOWED_TYPES = ["application/pdf", "image/png"];
 const MAX_SIZE = 100_000_000;
@@ -47,6 +49,8 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   const [files, setFiles] = useState<FileItem[]>(
     mapLoaderDataToFileItem(loaderFiles)
   );
+  const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
+
   const { isAuthenticated, login, logout } = useSimpleAuth();
 
   const [authModalOpen, setAuthModalOpen] = useState(!isAuthenticated);
@@ -119,6 +123,17 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     setFiles((prevFiles) => prevFiles.filter((file) => file.id !== id));
   };
 
+  const { deleteFile } = useDeleteFile();
+
+  const handleDeleteFile = async (fileId: string) => {
+    try {
+      await deleteFile(fileId);
+      setFiles((prevFiles) => prevFiles.filter((file) => file.id !== fileId));
+    } catch (error) {
+      console.error("Error deleting file:", error);
+    }
+  };
+
   useEffect(() => {
     if (!isAuthenticated) {
       setAuthModalOpen(true);
@@ -141,7 +156,10 @@ export default function Home({ loaderData }: Route.ComponentProps) {
             removeFile(fileToRemove.id);
           }
         }}
+        onPreview={(target: FileItem) => setSelectedFile(target)}
+        onDeleteFile={handleDeleteFile}
         isLoading={isLoadingData}
+        previewComponent={<SanitizedPreview content={selectedFile} />}
       />
       <AuthModal
         open={authModalOpen}

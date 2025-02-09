@@ -12,7 +12,8 @@ export interface LoaderFileData {
   fileId: string;
   uniqueFileName: string;
   originalName: string;
-  url: string;
+  path: string;
   size: number;
   modifiedTime: Date;
+  type: string;
 }
