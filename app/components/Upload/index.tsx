@@ -83,10 +83,12 @@ export function FileDashboard({
             <TableBody>
               {files.map((file, index) => (
                 <TableRow key={index}>
-                  <TableCell className="font-medium max-w-[380px] line-clamp-1 overflow-ellipsis">
+                  <TableCell className="font-medium max-w-[310px] line-clamp-1 overflow-ellipsis whitespace-nowrap">
                     {escapeHTML(sanitizeFilename(file.name))}
                   </TableCell>
-                  <TableCell>{formatFileSize(file.size)}</TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {formatFileSize(file.size)}
+                  </TableCell>
                   <TableCell>{file.type}</TableCell>
                   <TableCell className="w-[200px]">
                     <Progress value={file.progress} className="w-full" />

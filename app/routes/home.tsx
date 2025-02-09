@@ -17,6 +17,7 @@ import { useDeleteFile } from "~/hooks/files/useDeleteFile";
 import SanitizedPreview from "~/components/SanitizedPreview";
 import { useCancelUpload } from "~/hooks/useCancelUpload";
 import { z } from "zod";
+import { ContentSecurityPolicyProvider } from "~/components/ContentSecurityPolicyProvider";
 
 const ALLOWED_TYPES = ["application/pdf", "image/png"];
 const MAX_SIZE = 100_000_000;
@@ -195,26 +196,28 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 
   return (
     <div className="p-10 flex flex-col items-center justify-center">
-      <FileDashboard
-        files={files}
-        onDrop={onDrop}
-        onRemove={(index: number) => {
-          const fileToRemove = files[index];
-          if (fileToRemove) {
-            removeFile(fileToRemove.id);
+      <ContentSecurityPolicyProvider policy="default-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;">
+        <FileDashboard
+          files={files}
+          onDrop={onDrop}
+          onRemove={(index: number) => {
+            const fileToRemove = files[index];
+            if (fileToRemove) {
+              removeFile(fileToRemove.id);
+            }
+          }}
+          onPreview={(target: FileItem) => setSelectedFile(target)}
+          onDeleteFile={handleDeleteFile}
+          onCancelUpload={handleCancelUpload}
+          isLoading={isLoadingData}
+          previewComponent={
+            <SanitizedPreview
+              content={selectedFile}
+              onClose={() => setSelectedFile(null)}
+            />
           }
-        }}
-        onPreview={(target: FileItem) => setSelectedFile(target)}
-        onDeleteFile={handleDeleteFile}
-        onCancelUpload={handleCancelUpload}
-        isLoading={isLoadingData}
-        previewComponent={
-          <SanitizedPreview
-            content={selectedFile}
-            onClose={() => setSelectedFile(null)}
-          />
-        }
-      />
+        />
+      </ContentSecurityPolicyProvider>
       <AuthModal
         open={authModalOpen}
         setOpen={setAuthModalOpen}

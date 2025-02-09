@@ -5,6 +5,20 @@ import type { Route } from "./+types/home";
 import { getMimeType } from "~/lib/utils";
 import type { LoaderFileData } from "~/types";
 
+async function revalidateFileType(filePath: string): Promise<boolean> {
+  const fileBuffer = await fsp.readFile(filePath);
+  if (fileBuffer.slice(0, 4).toString() === "%PDF") {
+    return true;
+  }
+  const pngSignature = Buffer.from([
+    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+  ]);
+  if (fileBuffer.slice(0, 8).equals(pngSignature)) {
+    return true;
+  }
+  return false;
+}
+
 export async function action({ request }: Route.ActionArgs) {
   if (request.method === "DELETE") {
     try {
@@ -112,6 +126,12 @@ export async function action({ request }: Route.ActionArgs) {
         });
 
         await fsp.rm(tempDir, { recursive: true, force: true });
+
+        const isValidType = await revalidateFileType(finalFilePath);
+        if (!isValidType) {
+          await fsp.unlink(finalFilePath);
+          return new Response("Invalid file type", { status: 400 });
+        }
 
         const filePathForStat = path.join(userDir, uniqueFileName);
         const stat = await fsp.stat(filePathForStat);

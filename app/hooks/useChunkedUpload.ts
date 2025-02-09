@@ -34,7 +34,7 @@ function useChunkedUpload() {
         formData.append("fileName", sanitizeFilename(file.name));
         formData.append("chunk", chunk, file.name);
 
-        const response = await fetch("/api/upload", {
+        const response = await fetch("/api/upload-chunk", {
           method: "POST",
           body: formData,
           signal: abortController.signal,
