@@ -1,25 +1,52 @@
 import { useState, useCallback, useEffect } from "react";
 import useChunkedUpload from "~/hooks/useChunkedUpload";
-import { sanitizeFilename } from "~/lib/utils";
+import { mapLoaderDataToFileItem, sanitizeFilename } from "~/lib/utils";
 import { FileDashboard } from "~/components/Upload";
 import { useSimpleAuth } from "~/hooks/useSimpleAuth";
 import { AuthModal } from "~/components/AuthenticationModal";
 import { Button } from "~/components/ui/button";
+import type { Route } from "./+types/user-files";
+import { useRevalidator } from "react-router";
+import type { FileItem } from "~/types";
+import { Spinner } from "~/components/Spinner";
 
 const ALLOWED_TYPES = ["application/pdf", "image/png"];
 const MAX_SIZE = 100_000_000;
 
-interface FileItem {
-  id: string;
-  name: string;
-  size: number;
-  type: string;
-  progress: number;
-  status: "uploading" | "completed" | "error";
+export async function clientLoader({ params }: Route.ClientLoaderArgs) {
+  let token: string | null = null;
+  if (typeof window !== "undefined") {
+    token = JSON.parse(sessionStorage.getItem("currentUser") as string)?.token;
+  }
+
+  if (!token) {
+    return { files: [] };
+  }
+
+  const res = await fetch(`/api/user/${token}/files`);
+  if (!res.ok) {
+    throw new Error(`Failed to load files: ${res.statusText}`);
+  }
+  const data = await res.json();
+  return data;
 }
 
-export default function Home() {
-  const [files, setFiles] = useState<FileItem[]>([]);
+export function HydrateFallback() {
+  return (
+    <div className="w-screen h-screen flex items-center justify-center flex-col font-semibold text-2xl">
+      <Spinner />
+      <p>Loading files...</p>
+    </div>
+  );
+}
+
+export default function Home({ loaderData }: Route.ComponentProps) {
+  const { files: loaderFiles = [] } = loaderData;
+  const revalidator = useRevalidator();
+  const isLoadingData = revalidator.state === "loading";
+  const [files, setFiles] = useState<FileItem[]>(
+    mapLoaderDataToFileItem(loaderFiles)
+  );
   const { isAuthenticated, login, logout } = useSimpleAuth();
 
   const [authModalOpen, setAuthModalOpen] = useState(!isAuthenticated);
@@ -96,7 +123,12 @@ export default function Home() {
     if (!isAuthenticated) {
       setAuthModalOpen(true);
     }
+    revalidator.revalidate();
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    setFiles(mapLoaderDataToFileItem(loaderFiles));
+  }, [loaderFiles]);
 
   return (
     <div className="p-10 flex flex-col items-center justify-center">
@@ -109,6 +141,7 @@ export default function Home() {
             removeFile(fileToRemove.id);
           }
         }}
+        isLoading={isLoadingData}
       />
       <AuthModal
         open={authModalOpen}

@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { escapeHTML, sanitizeFilename } from "~/lib/utils";
+import { Spinner } from "../Spinner";
 
 interface FileItem {
   name: string;
@@ -27,9 +28,15 @@ interface FileDashboardProps {
   files: FileItem[];
   onDrop: (files: File[]) => void;
   onRemove: (index: number) => void;
+  isLoading: boolean;
 }
 
-export function FileDashboard({ files, onDrop, onRemove }: FileDashboardProps) {
+export function FileDashboard({
+  files,
+  onDrop,
+  onRemove,
+  isLoading = false,
+}: FileDashboardProps) {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
   return (
@@ -99,6 +106,7 @@ export function FileDashboard({ files, onDrop, onRemove }: FileDashboardProps) {
             </TableBody>
           </Table>
         )}
+        {!files.length && isLoading && <Spinner />}
       </CardContent>
     </Card>
   );
