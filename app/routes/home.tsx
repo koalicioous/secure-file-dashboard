@@ -24,8 +24,6 @@ export default function Home() {
 
   const [authModalOpen, setAuthModalOpen] = useState(!isAuthenticated);
 
-  const { uploadFile } = useChunkedUpload();
-
   const validateFile = async (file: File): Promise<boolean> => {
     if (file.size > MAX_SIZE) {
       alert(`File ${file.name} exceeds the 100MB limit.`);
@@ -39,6 +37,8 @@ export default function Home() {
 
     return true;
   };
+
+  const { uploadFile } = useChunkedUpload();
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {

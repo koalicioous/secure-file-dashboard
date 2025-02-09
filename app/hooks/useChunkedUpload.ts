@@ -1,7 +1,9 @@
 import { CHUNK_SIZE } from "~/constants";
 import { sanitizeFilename } from "~/lib/utils";
+import { useSimpleAuth } from "./useSimpleAuth";
 
 function useChunkedUpload() {
+  const { currentUser = "" } = useSimpleAuth();
   const uploadFile = async (
     file: File,
     fileId: string,
@@ -17,6 +19,7 @@ function useChunkedUpload() {
       const chunk = file.slice(start, end);
 
       const formData = new FormData();
+      formData.append("userToken", currentUser as string);
       formData.append("fileId", fileId);
       formData.append("chunkIndex", i.toString());
       formData.append("totalChunks", totalChunks.toString());
