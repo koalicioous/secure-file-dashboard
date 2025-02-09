@@ -14,4 +14,7 @@ export default defineConfig({
   ssr: {
     noExternal: ["react-dropzone"],
   },
+  build: {
+    sourcemap: true,
+  },
 });

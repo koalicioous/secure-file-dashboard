@@ -59,7 +59,7 @@ export function FileDashboard({
             isDragActive ? "border-primary" : "border-muted"
           }`}
         >
-          <input {...getInputProps()} />
+          <input {...getInputProps()} aria-label="File dropzone" />
           <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
           <p className="mt-2 text-sm text-muted-foreground">
             Drag and drop files here, or click to select

@@ -23,7 +23,6 @@ const SanitizedPreview = ({
   onClose: () => void;
 }) => {
   const { currentUser = "" } = useSimpleAuth();
-  const contentUrl = buildUrl(currentUser as string, content?.url as string);
 
   const metadata = useFileMetadata({ fileId: content?.id as string });
 
@@ -34,6 +33,8 @@ const SanitizedPreview = ({
   const { downloadFile } = useDownloadFile();
 
   if (!content) return null;
+
+  const contentUrl = buildUrl(currentUser as string, content?.url as string);
 
   return (
     <div className="my-4">
@@ -66,7 +67,7 @@ const SanitizedPreview = ({
       )}
       <div className="max-w-[500px] w-full mx-auto">
         <div className=" mx-auto w-full h-[400px] overflow-auto">
-          {content && content?.type === "application/pdf" && (
+          {content && content?.type === "application/pdf" && contentUrl && (
             <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
               <Viewer
                 fileUrl={contentUrl}
@@ -74,7 +75,7 @@ const SanitizedPreview = ({
               />
             </Worker>
           )}
-          {content?.type === "image/png" && (
+          {content?.type === "image/png" && contentUrl && (
             <img
               src={contentUrl}
               alt={content?.name}

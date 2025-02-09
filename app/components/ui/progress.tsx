@@ -1,7 +1,7 @@
-import * as React from "react"
-import * as ProgressPrimitive from "@radix-ui/react-progress"
+import * as React from "react";
+import * as ProgressPrimitive from "@radix-ui/react-progress";
 
-import { cn } from "~/lib/utils"
+import { cn } from "~/lib/utils";
 
 function Progress({
   className,
@@ -16,6 +16,9 @@ function Progress({
         className
       )}
       {...props}
+      role="progressbar"
+      id="alb"
+      aria-label="upload progress"
     >
       <ProgressPrimitive.Indicator
         data-slot="progress-indicator"
@@ -23,7 +26,7 @@ function Progress({
         style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
       />
     </ProgressPrimitive.Root>
-  )
+  );
 }
 
-export { Progress }
+export { Progress };

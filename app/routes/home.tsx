@@ -7,14 +7,23 @@ import { AuthModal } from "~/components/AuthenticationModal";
 import { Button } from "~/components/ui/button";
 import type { Route } from "./+types/user-files";
 import { useRevalidator } from "react-router";
-import type { FileItem, LoaderFileData } from "~/types";
+import {
+  LoaderFileDataSchema,
+  type FileItem,
+  type LoaderFileData,
+} from "~/types";
 import { Spinner } from "~/components/Spinner";
 import { useDeleteFile } from "~/hooks/files/useDeleteFile";
 import SanitizedPreview from "~/components/SanitizedPreview";
 import { useCancelUpload } from "~/hooks/useCancelUpload";
+import { z } from "zod";
 
 const ALLOWED_TYPES = ["application/pdf", "image/png"];
 const MAX_SIZE = 100_000_000;
+
+export const FilesResponseSchema = z.object({
+  files: z.array(LoaderFileDataSchema),
+});
 
 export async function clientLoader({
   params,
@@ -34,7 +43,8 @@ export async function clientLoader({
     throw new Error(`Failed to load files: ${res.statusText}`);
   }
   const data = await res.json();
-  return data;
+  const parsedData = FilesResponseSchema.parse(data);
+  return parsedData;
 }
 
 export function HydrateFallback() {
