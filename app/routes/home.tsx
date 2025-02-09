@@ -1,7 +1,10 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import useChunkedUpload from "~/hooks/useChunkedUpload";
 import { sanitizeFilename } from "~/lib/utils";
-import { FileDashboard } from "~/upload";
+import { FileDashboard } from "~/components/Upload";
+import { useSimpleAuth } from "~/hooks/useSimpleAuth";
+import { AuthModal } from "~/components/AuthenticationModal";
+import { Button } from "~/components/ui/button";
 
 const ALLOWED_TYPES = ["application/pdf", "image/png"];
 const MAX_SIZE = 100_000_000;
@@ -17,6 +20,10 @@ interface FileItem {
 
 export default function Home() {
   const [files, setFiles] = useState<FileItem[]>([]);
+  const { isAuthenticated, login, logout } = useSimpleAuth();
+
+  const [authModalOpen, setAuthModalOpen] = useState(!isAuthenticated);
+
   const { uploadFile } = useChunkedUpload();
 
   const validateFile = async (file: File): Promise<boolean> => {
@@ -85,8 +92,14 @@ export default function Home() {
     setFiles((prevFiles) => prevFiles.filter((file) => file.id !== id));
   };
 
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setAuthModalOpen(true);
+    }
+  }, [isAuthenticated]);
+
   return (
-    <div className="p-10">
+    <div className="p-10 flex flex-col items-center justify-center">
       <FileDashboard
         files={files}
         onDrop={onDrop}
@@ -97,6 +110,22 @@ export default function Home() {
           }
         }}
       />
+      <AuthModal
+        open={authModalOpen}
+        setOpen={setAuthModalOpen}
+        onAuthenticate={(username, password) => login(username, password)}
+      />
+      {isAuthenticated && (
+        <Button
+          type="button"
+          size="icon"
+          variant="outline"
+          className="mx-auto w-full max-w-[200px] mt-10  px-3 py-2 hover:bg-transparent"
+          onClick={() => logout()}
+        >
+          Logout
+        </Button>
+      )}
     </div>
   );
 }
