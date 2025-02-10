@@ -7,6 +7,7 @@ import {
   useContext,
 } from "react";
 import type { ReactNode } from "react";
+import crypto from "crypto";
 
 interface AuthData {
   token: string;
@@ -88,9 +89,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [authData]);
 
   const login = useCallback(async (username: string, password: string) => {
-    const data = new TextEncoder().encode(`${username}:${password}`);
-    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-    const token = bufferToHex(hashBuffer);
+    const token = crypto
+      .createHash("sha256")
+      .update(`${username}:${password}`)
+      .digest("hex");
+
     const expiry = Date.now() + EXPIRY_DURATION;
     const newAuthData: AuthData = { token, expiry };
 

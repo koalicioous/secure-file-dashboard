@@ -3,12 +3,11 @@ import { promises as fsp } from "fs";
 import path from "path";
 import type { Route } from "./+types/file";
 import { getUserTokenFromCookie } from "~/lib/utils";
+import crypto from "crypto";
 
 async function computeChecksum(filePath: string): Promise<string> {
   const fileBuffer = await fsp.readFile(filePath);
-  const digest = await crypto.subtle.digest("SHA-256", fileBuffer);
-  const hashArray = Array.from(new Uint8Array(digest));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  return crypto.createHash("sha256").update(fileBuffer).digest("hex");
 }
 
 async function findUserFile(
