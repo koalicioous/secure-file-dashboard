@@ -91,7 +91,13 @@ export function FileDashboard({
                   </TableCell>
                   <TableCell>{file.type}</TableCell>
                   <TableCell className="w-[200px]">
-                    <Progress value={file.progress} className="w-full" />
+                    <Progress
+                      value={file.progress}
+                      className="w-full"
+                      {...(file.status === "uploading" && {
+                        indicatorClassName: "animate-wave",
+                      })}
+                    />
                   </TableCell>
                   <TableCell>
                     {file.status === "uploading" && (

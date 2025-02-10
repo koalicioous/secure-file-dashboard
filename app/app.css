@@ -112,3 +112,18 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes waveLeftToRight {
+  0% {
+    background-position-x: 0%;
+  }
+  100% {
+    background-position-x: 200%;
+  }
+}
+
+.animate-wave {
+  background: linear-gradient(to right, #3b82f6 0%, #1e40af 50%, #3b82f6 100%);
+  background-size: 200% 100%;
+  animation: waveLeftToRight 1.5s linear infinite;
+}

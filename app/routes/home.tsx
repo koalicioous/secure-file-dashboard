@@ -105,7 +105,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
           name: sanitizeFilename(file.name),
           size: file.size,
           type: file.type,
-          progress: 5,
+          progress: 15,
           status: "uploading",
         };
         setFiles((prev) => [...prev, newFile]);
