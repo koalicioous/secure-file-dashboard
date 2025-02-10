@@ -8,6 +8,7 @@ import {
   XCircle,
   Eye,
   CircleX,
+  GithubIcon,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -49,8 +50,20 @@ export function FileDashboard({
 
   return (
     <Card className="w-full max-w-4xl mx-auto">
-      <CardHeader>
+      <CardHeader className="flex justify-between items-center w-full flex-row">
         <CardTitle>Secure File Dashboard</CardTitle>
+        <Button
+          variant="outline"
+          className="cursor-pointer"
+          onClick={() => {
+            window.open(
+              "https://github.com/koalicioous/secure-file-dashboard",
+              "_blank"
+            );
+          }}
+        >
+          <GithubIcon />
+        </Button>
       </CardHeader>
       <CardContent>
         <div
