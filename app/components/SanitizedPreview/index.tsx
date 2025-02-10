@@ -1,6 +1,6 @@
 import type { FileItem } from "~/types";
 import DOMPurify from "dompurify";
-import { useSimpleAuth } from "~/hooks/useSimpleAuth";
+import { useSimpleAuth } from "~/context/AuthContext";
 import { Worker } from "@react-pdf-viewer/core";
 import { Viewer, SpecialZoomLevel } from "@react-pdf-viewer/core";
 

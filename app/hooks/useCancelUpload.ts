@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useSimpleAuth } from "~/hooks/useSimpleAuth";
+import { useSimpleAuth } from "~/context/AuthContext";
 
 export function useCancelUpload() {
   const { currentUser } = useSimpleAuth();

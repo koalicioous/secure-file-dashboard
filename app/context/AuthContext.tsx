@@ -1,10 +1,31 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import {
+  createContext,
+  useState,
+  useEffect,
+  useCallback,
+  useContext,
+} from "react";
+import type { ReactNode } from "react";
 
 interface AuthData {
   token: string;
   expiry: number;
 }
+
+interface AuthContextType {
+  isAuthenticated: boolean;
+  currentUser: string | null;
+  login: (username: string, password: string) => Promise<void>;
+  logout: () => void;
+}
+
+const AuthContext = createContext<AuthContextType>({
+  isAuthenticated: false,
+  currentUser: null,
+  login: async () => {},
+  logout: () => {},
+});
 
 const STORAGE_KEY = "currentUser";
 const EXPIRY_DURATION = 30 * 60 * 1000;
@@ -37,7 +58,16 @@ function isAuthDataValid(data: AuthData): boolean {
   return Date.now() < data.expiry;
 }
 
-export function useSimpleAuth() {
+function bufferToHex(buffer: ArrayBuffer): string {
+  return Array.from(new Uint8Array(buffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+interface AuthProviderProps {
+  children: ReactNode;
+}
+export function AuthProvider({ children }: AuthProviderProps) {
   const [authData, setAuthData] = useState<AuthData | null>(() => {
     const stored = getStoredAuthData();
     if (stored && isAuthDataValid(stored)) {
@@ -54,15 +84,8 @@ export function useSimpleAuth() {
         setStoredAuthData(null);
       }
     }, 60 * 1000);
-
     return () => clearInterval(interval);
   }, [authData]);
-
-  const bufferToHex = (buffer: ArrayBuffer): string => {
-    return Array.from(new Uint8Array(buffer))
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
-  };
 
   const login = useCallback(async (username: string, password: string) => {
     const data = new TextEncoder().encode(`${username}:${password}`);
@@ -73,12 +96,16 @@ export function useSimpleAuth() {
 
     setStoredAuthData(newAuthData);
     setAuthData(newAuthData);
-    document.cookie = `currentUser=${token}; expires=${expiry}; path=/; Secure; SameSite=Strict`;
+
+    document.cookie = `currentUser=${token}; expires=${new Date(
+      expiry
+    ).toUTCString()}; path=/; Secure; SameSite=Strict`;
   }, []);
 
   const logout = useCallback(() => {
     setAuthData(null);
     setStoredAuthData(null);
+
     document.cookie =
       "currentUser=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Strict";
   }, []);
@@ -86,5 +113,15 @@ export function useSimpleAuth() {
   const isAuthenticated = Boolean(authData && isAuthDataValid(authData));
   const currentUser = authData?.token || null;
 
-  return { isAuthenticated, currentUser, login, logout };
+  return (
+    <AuthContext.Provider
+      value={{ isAuthenticated, currentUser, login, logout }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useSimpleAuth() {
+  return useContext(AuthContext);
 }

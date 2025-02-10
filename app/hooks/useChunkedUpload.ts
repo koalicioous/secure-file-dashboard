@@ -1,6 +1,6 @@
 import { CHUNK_SIZE } from "~/constants";
 import { sanitizeFilename } from "~/lib/utils";
-import { useSimpleAuth } from "./useSimpleAuth";
+import { useSimpleAuth } from "~/context/AuthContext";
 import { useRef } from "react";
 import { LoaderFileDataSchema, type LoaderFileData } from "~/types";
 

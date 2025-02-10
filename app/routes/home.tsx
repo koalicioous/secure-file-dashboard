@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import useChunkedUpload from "~/hooks/useChunkedUpload";
 import { mapLoaderDataToFileItem, sanitizeFilename } from "~/lib/utils";
 import { FileDashboard } from "~/components/Upload";
-import { useSimpleAuth } from "~/hooks/useSimpleAuth";
+import { useSimpleAuth } from "~/context/AuthContext";
 import { AuthModal } from "~/components/AuthenticationModal";
 import { Button } from "~/components/ui/button";
 import type { Route } from "./+types/user-files";
@@ -105,7 +105,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
           name: sanitizeFilename(file.name),
           size: file.size,
           type: file.type,
-          progress: 0,
+          progress: 5,
           status: "uploading",
         };
         setFiles((prev) => [...prev, newFile]);
