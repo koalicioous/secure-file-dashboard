@@ -1,0 +1,18 @@
+FROM alpine:latest
+
+RUN apk update && \
+    apk add --no-cache clamav clamav-daemon && \
+    mkdir -p /var/lib/clamav /run/clamav && \
+    chown -R clamav:clamav /var/lib/clamav /run/clamav
+
+RUN sed -i 's/^Example/#Example/' /etc/clamav/clamd.conf && \
+    sed -i 's/^Example/#Example/' /etc/clamav/freshclam.conf
+RUN echo "TCPSocket 3310" >> /etc/clamav/clamd.conf && \
+    echo "TCPAddr 0.0.0.0" >> /etc/clamav/clamd.conf
+
+COPY clamav-entrypoint.sh /usr/local/bin/clamav-entrypoint.sh
+RUN chmod +x /usr/local/bin/clamav-entrypoint.sh
+
+EXPOSE 3310
+
+CMD ["clamav-entrypoint.sh"]

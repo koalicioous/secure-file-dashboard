@@ -7,8 +7,11 @@ import type { LoaderFileData } from "~/types";
 import NodeClam from "clamscan";
 
 const clamScan = new NodeClam().init({
-  clamscan: {
-    path: "/usr/local/clamav/bin/clamscan",
+  clamdscan: {
+    socket: false,
+    host: process.env.CLAMD_HOST || "clamav",
+    port: parseInt(process.env.CLAMD_PORT || "3310", 10),
+    path: "/usr/bin/clamdscan",
     active: true,
   },
 });

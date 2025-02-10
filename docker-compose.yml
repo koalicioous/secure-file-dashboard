@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./uploads:/app/uploads
+    environment:
+      - CLAMD_HOST=clamav
+      - CLAMD_PORT=3310
+    depends_on:
+      - clamav
+
+  clamav:
+    build:
+      context: .
+      dockerfile: Dockerfile.clamav
+    ports:
+      - "3310:3310"
+    restart: unless-stopped
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile.nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - app
