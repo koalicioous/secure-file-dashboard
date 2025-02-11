@@ -66,10 +66,13 @@ This project is a demo of a secure file dashboard that enables users to upload, 
 
 ## Web Performance
 1. **Local Metrics**
+
 ![Screenshot 2025-02-11 at 13 16 03](https://github.com/user-attachments/assets/90ffe897-d973-4d2d-a66b-9bac289c3b9e)
 
 2. **Lighthouse**
+
 ![Screenshot 2025-02-11 at 13 17 04](https://github.com/user-attachments/assets/77c5d48c-403e-4678-b8ef-ce6773265ebf)
 
 3. **HTTP Observatory Report**
+
 ![Screenshot 2025-02-11 at 13 17 27](https://github.com/user-attachments/assets/6839d15e-6d60-49bc-a2b7-94e4c23b6e3b)
