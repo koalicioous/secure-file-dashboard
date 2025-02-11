@@ -1,100 +1,65 @@
-# Welcome to React Router!
+# Secure File Dashboard
 
-A modern, production-ready template for building full-stack React applications using React Router.
+This project is a demo of a secure file dashboard that enables users to upload, preview, and download files securely. The file upload process is highly performant and network friendly, as it allows users to upload files in chunks rather than in a single attempt. Each chunk is retryable, meaning that if a network error disrupts the upload process, users can resume uploading without having to restart the entire file transfer.
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+## Disclaimer
 
-## Features
+1. **Authentication:**  
+   To limit the scope of the project, the authentication mechanism is simplified. The combination of username and password generates a SHA-256 token that serves as the user's identifier.
+2. **Project URL:**  
+   The project is accessible via: [https://18-179-7-185.nip.io/](https://18-179-7-185.nip.io/)
+3. **Execution Instructions:**  
+   Details on how to run the application are provided at the end of this document.
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+## Tech Stack
 
-## Getting Started
+- **NGINX:** Used as a load balancer.
+- **React Router:** Serves as both the frontend routing solution and the backend actions handler.
+- **Shadcn UI & Tailwind CSS:** Utilized for creating a modern and responsive user interface.
 
-### Installation
+## Client Application Security
 
-Install the dependencies:
+- **Content Security Policy (CSP):**  
+  The application uses both CSP headers and meta tags to ensure that only trusted sources can provide media or execute scripts.
+- **Security-Focused HTTPS Headers:**  
+  Headers such as `X-Content-Type-Options: nosniff` are used to prevent MIME type sniffing.
+- **Client-Side File Validation:**  
+  The browser's File API is employed to check the file's MIME type before the upload, ensuring that only valid files are processed.
 
-```bash
-npm install
-```
+## Server-Side Security Recommendations
 
-### Development
+- **Chunk-Based File Upload:**  
+  Files are uploaded in smaller, manageable chunks, which improves reliability and resilience against network issues.
+- **Server-Side MIME Revalidation:**  
+  The server revalidates the file’s MIME type by inspecting its buffer signature to ensure data integrity.
+- **DDoS Protection:**  
+  Endpoints are safeguarded from DDoS attacks through IP-based rate limiting implemented using NGINX.
+- **Virus Scanning:**  
+  Uploaded files are scanned for viruses using [`clamav`](https://www.clamav.net/).
 
-Start the development server with HMR:
+## Performance Plan
 
-```bash
-npm run dev
-```
+- **Efficient Large File Uploads:**  
+  Large files are split into 1MB chunks to facilitate parallel uploading, significantly reducing upload times.
+- **Resource Management:**  
+  Temporary files generated during the upload process are promptly cleaned up once the upload is completed or cancelled, freeing up memory and storage resources.
 
-Your application will be available at `http://localhost:5173`.
+## Additional Features
 
-## Building for Production
+- **Cancellable Uploads:**  
+  Users have the ability to cancel an ongoing file upload at any time.
 
-Create a production build:
+## How to Run the Application Locally
 
-```bash
-npm run build
-```
+1. **Clone the Repository:**  
+   Clone the project repository to your local environment.
+2. **Start the Services:**  
+   Execute the following command:
+   ```bash
+   docker-compose up -d
+   ```
+3. **Restarting the Application:**
+   If the application shuts down, restart the `app` service using Docker Compose after ensuring that the antivirus and NGINX services are running.
 
-## Deployment
-
-### Docker Deployment
-
-This template includes three Dockerfiles optimized for different package managers:
-
-- `Dockerfile` - for npm
-- `Dockerfile.pnpm` - for pnpm
-- `Dockerfile.bun` - for bun
-
-To build and run using Docker:
-
-```bash
-# For npm
-docker build -t my-app .
-
-# For pnpm
-docker build -f Dockerfile.pnpm -t my-app .
-
-# For bun
-docker build -f Dockerfile.bun -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
-```
-
-The containerized application can be deployed to any platform that supports Docker, including:
-
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
-
----
-
-Built with ❤️ using React Router.
+4. **Accessing the Application:**
+   The application is accessible via `localhost`.

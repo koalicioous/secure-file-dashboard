@@ -35,8 +35,20 @@ export default function handleRequest(
           const body = new PassThrough();
           const stream = createReadableStreamFromReadable(body);
 
+          responseHeaders.set(
+            "Strict-Transport-Security",
+            "max-age=31536000; includeSubDomains; preload"
+          );
+
+          responseHeaders.set("X-Content-Type-Options", "nosniff");
+
+          responseHeaders.set(
+            "Referrer-Policy",
+            "strict-origin-when-cross-origin"
+          );
+
           const csp =
-            "default-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;";
+            "default-src 'self' https://fonts.gstatic.com; script-src 'self' https://unpkg.com; style-src 'self' https://fonts.googleapis.com; object-src 'self'";
 
           responseHeaders.set("Content-Type", "text/html");
           responseHeaders.set("Content-Security-Policy", csp);
