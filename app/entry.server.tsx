@@ -48,7 +48,7 @@ export default function handleRequest(
           );
 
           const csp =
-            "default-src 'self' https://fonts.gstatic.com; script-src 'self' https://unpkg.com; style-src 'self' https://fonts.googleapis.com; object-src 'self';frame-ancestors 'none'";
+            "default-src 'self' https://fonts.gstatic.com; script-src 'self' https://unpkg.com; style-src 'self' https://fonts.googleapis.com; object-src 'self';frame-ancestors 'self'";
 
           responseHeaders.set("Content-Type", "text/html");
           responseHeaders.set("Content-Security-Policy", csp);
