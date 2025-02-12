@@ -22,7 +22,7 @@ This project is a demo of a secure file dashboard that enables users to upload, 
 - **Content Security Policy (CSP):**  
   The application uses both CSP headers and meta tags to ensure that only trusted sources can provide media or execute scripts.
 - **Security-Focused HTTPS Headers:**  
-  Headers such as `X-Content-Type-Options: nosniff` are used to prevent MIME type sniffing.
+  Headers such as `X-Content-Type-Options: nosniff` are used to prevent MIME type sniffing. `Strict-Transport-Security (HSTS)` to enforce secure connection between browser and server. `X-Content-Type-Options` to prevent browser fron MIME Sniffing and respect the `Content-Type` header from server. `X-Frame-Options` as an additional safeguad against clickjacking by preventing the page from being embedded in frames from other origin.
 - **Client-Side File Validation:**  
   The browser's File API is employed to check the file's MIME type before the upload, ensuring that only valid files are processed.
 
@@ -63,3 +63,16 @@ This project is a demo of a secure file dashboard that enables users to upload, 
 
 4. **Accessing the Application:**
    The application is accessible via `localhost`.
+
+## Web Performance
+1. **Local Metrics**
+
+![Screenshot 2025-02-11 at 13 16 03](https://github.com/user-attachments/assets/90ffe897-d973-4d2d-a66b-9bac289c3b9e)
+
+2. **Lighthouse**
+
+![Screenshot 2025-02-11 at 13 17 04](https://github.com/user-attachments/assets/77c5d48c-403e-4678-b8ef-ce6773265ebf)
+
+3. **HTTP Observatory Report**
+
+![Screenshot 2025-02-11 at 13 17 27](https://github.com/user-attachments/assets/6839d15e-6d60-49bc-a2b7-94e4c23b6e3b)
