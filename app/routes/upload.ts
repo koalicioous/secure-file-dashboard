@@ -65,6 +65,42 @@ export async function action({ request }: Route.ActionArgs) {
       console.error("Error removing file:", error);
       return new Response("Internal Server Error", { status: 500 });
     }
+  } else if (request.method === "GET") {
+    try {
+      const url = new URL(request.url);
+      const fileId = url.searchParams.get("fileId");
+      const userToken = url.searchParams.get("userToken");
+
+      if (!fileId || !userToken) {
+        return new Response("Missing required fields", { status: 400 });
+      }
+
+      const tempDir = path.join(
+        process.cwd(),
+        "uploads",
+        "tmp",
+        userToken,
+        fileId
+      );
+
+      let uploadedChunks: number[] = [];
+      if (fs.existsSync(tempDir)) {
+        const files = await fsp.readdir(tempDir);
+        uploadedChunks = files
+          .map((f) => {
+            const match = f.match(/chunk_(\d+)/);
+            return match ? parseInt(match[1], 10) : null;
+          })
+          .filter((idx): idx is number => idx !== null);
+      }
+      return new Response(JSON.stringify({ uploadedChunks }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (error) {
+      console.error("Error fetching uploaded chunks:", error);
+      return new Response("Internal Server Error", { status: 500 });
+    }
   } else if (request.method === "POST") {
     try {
       const formData = await request.formData();
@@ -106,10 +142,6 @@ export async function action({ request }: Route.ActionArgs) {
       }
 
       const tempDir = path.join(uploadDir, "tmp", userToken, fileId);
-      if (!fs.existsSync(tempDir)) {
-        await fsp.mkdir(tempDir, { recursive: true });
-      }
-
       if (!fs.existsSync(tempDir)) {
         await fsp.mkdir(tempDir, { recursive: true });
       }
@@ -161,9 +193,8 @@ export async function action({ request }: Route.ActionArgs) {
           );
         }
 
-        const filePathForStat = path.join(userDir, uniqueFileName);
-        const stat = await fsp.stat(filePathForStat);
-        const url = path.join(uniqueFileName);
+        const stat = await fsp.stat(finalFilePath);
+        const url = uniqueFileName;
 
         const underscoreIndex = fileName.indexOf("_");
         const originalName =
@@ -171,15 +202,15 @@ export async function action({ request }: Route.ActionArgs) {
             ? fileName.substring(underscoreIndex + 1)
             : fileName;
         const fileType = getMimeType(fileName);
-        const finalResponse = {
+        const finalResponse: LoaderFileData = {
           fileId,
           uniqueFileName,
           originalName,
           path: url,
           size: stat.size,
-          modifiedTime: stat.mtime as unknown as string,
+          modifiedTime: stat.mtime.toString(),
           type: fileType,
-        } as LoaderFileData;
+        };
         return new Response(JSON.stringify(finalResponse), {
           status: 201,
           headers: { "Content-Type": "application/json" },
