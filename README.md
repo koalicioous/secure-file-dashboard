@@ -49,6 +49,30 @@ This project is a demo of a secure file dashboard that enables users to upload, 
 - **Cancellable Uploads:**  
   Users have the ability to cancel an ongoing file upload at any time.
 
+- **Resumable Uploads:**  
+  The upload process is designed to be resilient, allowing users to resume interrupted uploads without restarting from scratch. Here’s how the resumable upload functionality is implemented:
+
+  1. **File Chunking:**  
+     Files are divided into smaller chunks based on a predefined `CHUNK_SIZE`. This division not only optimizes the upload of large files but also allows the system to handle failures gracefully by re-sending only the missing chunks.
+
+  2. **Tracking Uploaded Chunks:**  
+     Before beginning an upload, the client-side hook (`useChunkedUpload`) sends a GET request to the server to determine which chunks have already been received. The server responds with an array of uploaded chunk indices, ensuring that only the missing chunks are uploaded during a resumed session.
+
+  3. **Retry and Network Recovery:**  
+     The system incorporates robust error handling:
+
+     - If a network error occurs or if the server returns an error (especially on transient 500-level issues), the client waits for a specified delay before retrying the upload.
+     - A listener for the `online` event ensures that if the network connection is lost, the upload will pause and then automatically resume once connectivity is restored.
+
+  4. **Merging Chunks on the Server:**  
+     Once all the chunks have been successfully uploaded, the server-side logic merges them in sequence to reconstruct the final file. After merging, the file undergoes:
+
+     - **File Type Validation:** A check (e.g., PDF or PNG signature) confirms the file is of an acceptable type.
+     - **Virus Scanning:** The merged file is scanned using ClamAV to ensure it is free of malicious content before it is finalized.
+
+  5. **Progress Feedback:**  
+     Throughout the upload process, progress updates are provided via a callback. This not only enhances user experience by indicating the upload status but also signals when the final merged file is ready after a successful upload.
+
 ## How to Run the Application Locally
 
 1. **Clone the Repository:**  
@@ -65,6 +89,7 @@ This project is a demo of a secure file dashboard that enables users to upload, 
    The application is accessible via `localhost`.
 
 ## Web Performance
+
 1. **Local Metrics**
 
 ![Screenshot 2025-02-11 at 13 16 03](https://github.com/user-attachments/assets/90ffe897-d973-4d2d-a66b-9bac289c3b9e)

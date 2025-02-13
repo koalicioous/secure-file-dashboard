@@ -65,42 +65,6 @@ export async function action({ request }: Route.ActionArgs) {
       console.error("Error removing file:", error);
       return new Response("Internal Server Error", { status: 500 });
     }
-  } else if (request.method === "GET") {
-    try {
-      const url = new URL(request.url);
-      const fileId = url.searchParams.get("fileId");
-      const userToken = url.searchParams.get("userToken");
-
-      if (!fileId || !userToken) {
-        return new Response("Missing required fields", { status: 400 });
-      }
-
-      const tempDir = path.join(
-        process.cwd(),
-        "uploads",
-        "tmp",
-        userToken,
-        fileId
-      );
-
-      let uploadedChunks: number[] = [];
-      if (fs.existsSync(tempDir)) {
-        const files = await fsp.readdir(tempDir);
-        uploadedChunks = files
-          .map((f) => {
-            const match = f.match(/chunk_(\d+)/);
-            return match ? parseInt(match[1], 10) : null;
-          })
-          .filter((idx): idx is number => idx !== null);
-      }
-      return new Response(JSON.stringify({ uploadedChunks }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
-    } catch (error) {
-      console.error("Error fetching uploaded chunks:", error);
-      return new Response("Internal Server Error", { status: 500 });
-    }
   } else if (request.method === "POST") {
     try {
       const formData = await request.formData();
@@ -222,5 +186,43 @@ export async function action({ request }: Route.ActionArgs) {
       console.error("Error handling chunk upload:", error);
       return new Response("Internal Server Error", { status: 500 });
     }
+  }
+}
+
+export async function loader({ request }: Route.LoaderArgs) {
+  try {
+    const url = new URL(request.url);
+    const fileId = url.searchParams.get("fileId");
+    const userToken = url.searchParams.get("userToken");
+
+    if (!fileId || !userToken) {
+      return new Response("Missing required fields", { status: 400 });
+    }
+
+    const tempDir = path.join(
+      process.cwd(),
+      "uploads",
+      "tmp",
+      userToken,
+      fileId
+    );
+
+    let uploadedChunks: number[] = [];
+    if (fs.existsSync(tempDir)) {
+      const files = await fsp.readdir(tempDir);
+      uploadedChunks = files
+        .map((f) => {
+          const match = f.match(/chunk_(\d+)/);
+          return match ? parseInt(match[1], 10) : null;
+        })
+        .filter((idx): idx is number => idx !== null);
+    }
+    return new Response(JSON.stringify({ uploadedChunks }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    console.error("Error fetching uploaded chunks:", error);
+    return new Response("Internal Server Error", { status: 500 });
   }
 }
